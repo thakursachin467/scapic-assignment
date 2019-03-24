@@ -16,7 +16,7 @@ exports.LoginUser= async (request,response,next)=>{
                .status(401)
                .send({
                    success:false,
-                   errors: Validation.errors
+                   message: Validation.errors
                })
        }
        const filter= {
@@ -28,7 +28,7 @@ exports.LoginUser= async (request,response,next)=>{
                .status(401)
                .send({
                    success: false,
-                   errors:{
+                   message:{
                        email:'Email does not exist'
                    }
                })
@@ -39,7 +39,7 @@ exports.LoginUser= async (request,response,next)=>{
                .status(401)
                .send({
                    success: false,
-                   errors:{
+                   message:{
                        password: 'Password is incorrect.'
                    }
                })
@@ -51,14 +51,16 @@ exports.LoginUser= async (request,response,next)=>{
            firstName: userProfile.name.firstName,
            lastName: userProfile.name.lastName,
            token:`Bearer ${token}`,
-           phone: userProfile.phone,
-            message:'Login Successfull'
+           phone: userProfile.phone
        };
        return response
            .status(200)
            .send({
                success: true,
-               body
+               body,
+               message:{
+                   message:'Login Successful'
+               }
            })
     };
 
@@ -81,7 +83,7 @@ exports.AddUser=async (request,response,next)=>{
           .status(400)
           .send({
               success:false,
-              errors: Validation.errors
+              message: Validation.errors
           });
   }
   //to check weather we have already registered with the email with any of our signup methods
@@ -111,7 +113,7 @@ exports.AddUser=async (request,response,next)=>{
             .status(400)
             .send({
                 success: false,
-                errors:{
+                message:{
                     email: 'User already exists with this email'
                 }
             });
@@ -128,20 +130,22 @@ exports.AddUser=async (request,response,next)=>{
            role: saveUser.role,
            phone: saveUser.phone,
            _id: saveUser._id,
-           message:'Successfully created profile'
        };
       return  response
             .status(200)
             .send({
                 status:true,
-                body
+                body,
+                message:{
+                    message:'Successfully created profile'
+                }
             })
    }catch (error) {
      return  response
            .status(500)
            .send({
                success: false,
-               error:error
+               message:error
            });
    }
 };
@@ -166,15 +170,17 @@ exports.googleOauth=async (request,response,next)=>{
                 .status(200)
                 .send({
                 success: true,
-                message:'Account Successfully Linked'
+                message:{
+                   message:'Account Successfully Linked'
+                }
             })
         }catch (error) {
             return response
                 .status(500)
                 .send({
                 success: false,
-                errors:{
-                    error:'Some error occured.'
+                message:{
+                    message:'Some error occured.'
                 }
             })
         }
@@ -207,22 +213,24 @@ exports.googleOauth=async (request,response,next)=>{
                   lastName: _.get(result,'name.lastName',''),
                   token:`Bearer ${token}`,
                   phone: _.get(result,'phone',''),
-                  message:'Successfully Linked with google account'
 
-              }
+              };
               return response
                   .status(200)
                   .send({
                       success: true,
-                      body
+                      body,
+                      message:{
+                          message:'Successfully Linked with google account'
+                      }
                   })
           }catch (error) {
               return response
                   .status(500)
                   .send({
                       success: false,
-                      errors:{
-                          error: 'Internal Server error'
+                      message:{
+                          message: 'Internal Server error'
                       }
                   })
           }
@@ -237,12 +245,15 @@ exports.googleOauth=async (request,response,next)=>{
             phone: _.get(existingUser,'phone',''),
             message:'Successfully Linked with google account'
 
-        }
+        };
         return response
             .status(200)
             .send({
                 success: true,
-                body
+                body,
+                message:{
+                    message:'Successfully Linked with google account'
+                }
             })
     }
 };
@@ -250,7 +261,6 @@ exports.googleOauth=async (request,response,next)=>{
 
 exports.facebookOauth = async  (request,response,next)=>{
     const profile= _.get(request,'user');
-    console.log(profile);
     const user_id=  _.get(request,'UserId');
     if(user_id){
         const filter= {
@@ -266,15 +276,17 @@ exports.facebookOauth = async  (request,response,next)=>{
                 .status(200)
                 .send({
                     success: true,
-                    message:'Account Successfully Linked'
+                    message:{
+                        message:'Account Successfully Linked',
+                    }
                 })
         }catch (error) {
             return response
                 .status(500)
                 .send({
                     success: false,
-                    errors:{
-                        error:'Some error occured.'
+                    message:{
+                        message:'Some error occured.'
                     }
                 })
         }
@@ -295,7 +307,6 @@ exports.facebookOauth = async  (request,response,next)=>{
             "is_deactive":false
         };
         const existingUser= await User.getUser(filter);
-        console.log(user);
         if(!existingUser){
             const result= await User.addUser(user);
             try{
@@ -307,22 +318,25 @@ exports.facebookOauth = async  (request,response,next)=>{
                     lastName: _.get(result,'name.lastName',''),
                     token:`Bearer ${token}`,
                     phone: _.get(result,'phone',''),
-                    message:'Successfully Linked with Facebook account'
 
                 };
                 return response
                     .status(200)
                     .send({
                         success: true,
-                        body
+                        body,
+                        message:{
+                            message:'Successfully Linked with Facebook account'
+                        }
                     })
             }catch (error) {
                 return response
                     .status(500)
                     .send({
                         success: false,
-                        errors:{
-                            error: 'Internal Server error'
+                        body:{},
+                        message:{
+                            message: 'Internal Server error'
                         }
                     })
             }
@@ -335,49 +349,20 @@ exports.facebookOauth = async  (request,response,next)=>{
             lastName: _.get(existingUser,'name.lastName',''),
             token:`Bearer ${token}`,
             phone: _.get(existingUser,'phone',''),
-            message:'Successfully logged in  with Facebook'
 
         };
         return response
             .status(200)
             .send({
                 success: true,
-                body
+                body,
+                message:{
+                    message:'Successfully logged in  with Facebook'
+                }
             })
     }
 
 };
 
-
-
-exports.deactivateUser=async (request,response,next)=>{
-  const user_id= request.userId;
-  const filter= {
-      _id:user_id
-  };
-  const update= {
-      is_deactive: true
-  };
- const userProfile= User.editUser(filter,update);
-  try{
-      return response
-          .status(200)
-          .send({
-              success:true,
-              body:{
-                  message:'Successfully removed user profile'
-              }
-          })
-  }catch (error) {
-      return response
-          .status(500)
-          .send({
-              success:false,
-              errors:{
-                  error:'Internal Server error'
-              }
-          })
-  }
-};
 
 

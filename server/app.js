@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const PORT= process.env.PORT || 5000;
 const auth= require('./routes/user/Auth');
+const profile= require('./routes/user/profile');
+const category= require('./routes/categories/category');
 const jwt = require('jsonwebtoken');
 const Keys= require('./Config/Credintials/keys');
 const passportFacebookSetup= require('./Config/Passport/facebookOauth');
@@ -43,6 +45,11 @@ mongoose.connect(`mongodb://admin:admin12@ds159880.mlab.com:59880/scapic`)
     .catch(((err)=>console.log(`connection failed to database ${err}`)));
 
 app.use('/api/auth/',auth);
+app.use('/api/profile/',profile);
+app.use('/api/categories/',category);
+
+
+
 app.listen(PORT,()=>{
     console.log(`APPLICATION STARTED ON PORT ${PORT}`);
 });

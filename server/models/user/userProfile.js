@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema   = mongoose.Schema;
-
+const _ = require('lodash');
 const userProfile = new Schema({
     email:{
         type: String
@@ -76,14 +76,13 @@ UserProfiles.getUser=async (filter)=>{
 
 };
 
-UserProfiles.getUsers= (filter)=>{
-  const query =   UserProfiles.find(filter).lean();
-  query.exec((error,result)=>{
-      if (error){
-          return error
-      }
-      return result;
-  });
+UserProfiles.getUsers=async ({filter={},limit,skip})=>{
+  const query =await  UserProfiles.find(filter).lean().skip(skip).limit(limit).exec();
+  try{
+      return query;
+  }catch (error) {
+      return error;
+  }
 };
 
 UserProfiles.addUser=async (params)=>{
@@ -99,10 +98,15 @@ try{
 
 
 UserProfiles.editUser = async  (filter,update,options={})=>{
-      const query = UserProfiles.findOneAndUpdate(filter,{$set:update},options).lean();
-      query.exec((error,result)=>{
-         console.log(result);
-      });
+      const query =await UserProfiles.findOneAndUpdate(filter,{$set:update},options).lean().exec();
+      try{
+          if(!_.isUndefined(query)) {
+              return query;
+          }
+
+      }catch (error) {
+          return error;
+      }
 };
 
 
