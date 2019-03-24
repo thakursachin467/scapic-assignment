@@ -3,7 +3,6 @@ const isEmpty = require('./isEmpty');
 
 module.exports = function validateRegisterUser(data) {
     let errors = {};
-
     data.name.firstName = !isEmpty(data.name.firstName) ? data.name.firstName : '';
     data.name.lastName= !isEmpty(data.name.lastName) ? data.name.lastName : '';
     data.email = !isEmpty(data.email) ? data.email : '';
@@ -13,7 +12,7 @@ module.exports = function validateRegisterUser(data) {
         errors.name = 'Name must be between 3 and 30 characters';
     }
     if (validator.isEmpty(data.name.firstName)) {
-        errors.name = 'Name is required';
+        errors.firstName = 'Name is required';
     }
     if (validator.isEmpty(data.email)) {
         errors.email = 'Email is required';
