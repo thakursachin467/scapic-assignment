@@ -9,7 +9,6 @@ module.exports = function validateRegisterUser(data) {
     data.email = !isEmpty(data.email) ? data.email : '';
     data.password = !isEmpty(data.password) ? data.password : '';
     data.rePassword = !isEmpty(data.rePassword) ? data.rePassword : '';
-    data.phone= !isEmpty(data.phone) ? data.phone:'';
     if (!validator.isLength(data.name.firstName, { min: 3, max: 30 })) {
         errors.name = 'Name must be between 3 and 30 characters';
     }
@@ -34,7 +33,7 @@ module.exports = function validateRegisterUser(data) {
     if (!validator.equals(data.password, data.rePassword)) {
         errors.rePassword = 'Passwords must match';
     }
-    if(!validator.isMobilePhone(data.phone,'en-IN')){
+    if(!validator.isMobilePhone(data.phone,'en-IN') &&!isEmpty(data.phone) ){
         errors.phone= 'Phone number is not valid';
     }
 

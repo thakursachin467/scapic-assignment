@@ -3,21 +3,18 @@ const Schema   = mongoose.Schema;
 
 const userProfile = new Schema({
     email:{
-        type: String,
-        required: true
+        type: String
     },
     name:{
       firstName:{
-          type:String,
-          required: true
+          type:String
       },
         lastName:{
           type: String
         }
     },
     password:{
-        type: String,
-        required: true
+        type: String
     },
     is_deactive:{
         type: Boolean,
@@ -27,7 +24,9 @@ const userProfile = new Schema({
         type: String
     },
     facebook:{
-        token : String,
+        id : {
+            type:String
+        },
         email: {
             type: String
         },
@@ -36,11 +35,13 @@ const userProfile = new Schema({
         }
     },
     google:{
-        token : String,
         email: {
             type: String
         },
         display_picture:{
+            type: String
+        },
+        id:{
             type: String
         }
     },
@@ -97,7 +98,7 @@ try{
 };
 
 
-UserProfiles.editUser = async  (filter,update,options)=>{
+UserProfiles.editUser = async  (filter,update,options={})=>{
       const query = UserProfiles.findOneAndUpdate(filter,{$set:update},options).lean();
       query.exec((error,result)=>{
          console.log(result);

@@ -44,14 +44,15 @@ exports.LoginUser= async (request,response,next)=>{
                    }
                })
        }
-    const token=await jwt.sign({userId:user.id,email:user.email},'oursecretkey',{expiresIn: '1hr'});
+    const token=await jwt.sign({userId:userProfile._id,email:userProfile.email},'oursecretkey');
        const body={
+           _id:userProfile._id,
            email: userProfile.email,
            firstName: userProfile.name.firstName,
            lastName: userProfile.name.lastName,
-           token,
-           phone: userProfile.phone
-
+           token:`Bearer ${token}`,
+           phone: userProfile.phone,
+            message:'Login Successfull'
        };
        return response
            .status(200)
@@ -126,7 +127,8 @@ exports.AddUser=async (request,response,next)=>{
            email: saveUser.email,
            role: saveUser.role,
            phone: saveUser.phone,
-           _id: saveUser._id
+           _id: saveUser._id,
+           message:'Successfully created profile'
        };
       return  response
             .status(200)
@@ -142,6 +144,240 @@ exports.AddUser=async (request,response,next)=>{
                error:error
            });
    }
+};
+
+
+
+exports.googleOauth=async (request,response,next)=>{
+    const profile= _.get(request,'user');
+    const user_id=  _.get(request,'UserId');
+    if(user_id){
+        const filter= {
+            _id: user_id
+        };
+        const update= {
+            "google.email": profile.email,
+            "google.id": profile.id,
+            "google.display_picture": _.get(profile,'photos[0].value')
+        };
+       const result= await User.editUser(filter,update);
+        try{
+            return response
+                .status(200)
+                .send({
+                success: true,
+                message:'Account Successfully Linked'
+            })
+        }catch (error) {
+            return response
+                .status(500)
+                .send({
+                success: false,
+                errors:{
+                    error:'Some error occured.'
+                }
+            })
+        }
+
+    }else{
+        const user= {
+            name:{
+                firstName: _.get(profile,'name.givenName'),
+                lastName:_.get(profile,'name.familyName')
+            },
+            google:{
+                "email": _.get(profile,'emails[0].value'),
+                "id": profile.id,
+                "display_picture":_.get(profile,'photos[0].value')
+            }
+        };
+        const filter={
+            "google.id": profile.id,
+            "is_deactive":false
+        };
+        const existingUser= await User.getUser(filter);
+        if(!existingUser){
+          const result= await User.addUser(user);
+          try{
+              const token= await jwt.sign({userId:result._id,email:result.google.email},'oursecretkey');
+              const body= {
+                  email: _.get(result,'google.email',''),
+                  _id:_.get(result,'_id'),
+                  firstName: _.get(result,'name.firstName',''),
+                  lastName: _.get(result,'name.lastName',''),
+                  token:`Bearer ${token}`,
+                  phone: _.get(result,'phone',''),
+                  message:'Successfully Linked with google account'
+
+              }
+              return response
+                  .status(200)
+                  .send({
+                      success: true,
+                      body
+                  })
+          }catch (error) {
+              return response
+                  .status(500)
+                  .send({
+                      success: false,
+                      errors:{
+                          error: 'Internal Server error'
+                      }
+                  })
+          }
+        }
+        const token= await jwt.sign({userId:existingUser._id,email:existingUser.google.email},'oursecretkey');
+        const body= {
+            email: _.get(existingUser,'google.email',''),
+            _id:_.get(existingUser,'_id'),
+            firstName: _.get(existingUser,'name.firstName',''),
+            lastName: _.get(existingUser,'name.lastName',''),
+            token:`Bearer ${token}`,
+            phone: _.get(existingUser,'phone',''),
+            message:'Successfully Linked with google account'
+
+        }
+        return response
+            .status(200)
+            .send({
+                success: true,
+                body
+            })
+    }
+};
+
+
+exports.facebookOauth = async  (request,response,next)=>{
+    const profile= _.get(request,'user');
+    console.log(profile);
+    const user_id=  _.get(request,'UserId');
+    if(user_id){
+        const filter= {
+            _id: user_id
+        };
+        const update= {
+            "facebook.email": profile.email,
+            "facebook.id": profile.id,
+        };
+        const result= await User.editUser(filter,update);
+        try{
+            return response
+                .status(200)
+                .send({
+                    success: true,
+                    message:'Account Successfully Linked'
+                })
+        }catch (error) {
+            return response
+                .status(500)
+                .send({
+                    success: false,
+                    errors:{
+                        error:'Some error occured.'
+                    }
+                })
+        }
+
+    }else{
+        const user= {
+            name:{
+                firstName: _.split(_.get(profile,'displayName'),' ',2)[0] ,
+                lastName:_.split(_.get(profile,'displayName'),' ',2)[1]
+            },
+            facebook:{
+                "email": profile.email,
+                "id": profile.id,
+            }
+        };
+        const filter={
+            "facebook.id": profile.id,
+            "is_deactive":false
+        };
+        const existingUser= await User.getUser(filter);
+        console.log(user);
+        if(!existingUser){
+            const result= await User.addUser(user);
+            try{
+                const token= await jwt.sign({userId:result._id,email:result.google.email},'oursecretkey');
+                const body= {
+                    email: _.get(result,'facebook.email',''),
+                    _id:_.get(result,'_id'),
+                    firstName: _.get(result,'name.firstName',''),
+                    lastName: _.get(result,'name.lastName',''),
+                    token:`Bearer ${token}`,
+                    phone: _.get(result,'phone',''),
+                    message:'Successfully Linked with Facebook account'
+
+                };
+                return response
+                    .status(200)
+                    .send({
+                        success: true,
+                        body
+                    })
+            }catch (error) {
+                return response
+                    .status(500)
+                    .send({
+                        success: false,
+                        errors:{
+                            error: 'Internal Server error'
+                        }
+                    })
+            }
+        }
+        const token= await jwt.sign({userId:existingUser._id,email:existingUser.facebook.email},'oursecretkey');
+        const body= {
+            email: _.get(existingUser,'facebook.email',''),
+            _id:_.get(existingUser,'_id'),
+            firstName: _.get(existingUser,'name.firstName',''),
+            lastName: _.get(existingUser,'name.lastName',''),
+            token:`Bearer ${token}`,
+            phone: _.get(existingUser,'phone',''),
+            message:'Successfully logged in  with Facebook'
+
+        };
+        return response
+            .status(200)
+            .send({
+                success: true,
+                body
+            })
+    }
+
+};
+
+
+
+exports.deactivateUser=async (request,response,next)=>{
+  const user_id= request.userId;
+  const filter= {
+      _id:user_id
+  };
+  const update= {
+      is_deactive: true
+  };
+ const userProfile= User.editUser(filter,update);
+  try{
+      return response
+          .status(200)
+          .send({
+              success:true,
+              body:{
+                  message:'Successfully removed user profile'
+              }
+          })
+  }catch (error) {
+      return response
+          .status(500)
+          .send({
+              success:false,
+              errors:{
+                  error:'Internal Server error'
+              }
+          })
+  }
 };
 
 
