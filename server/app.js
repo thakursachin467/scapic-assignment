@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 //passport middleware
 app.use(passport.initialize());
 
-mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-itdbo.mongodb.net/${process.env.MONGO_DB}?retryWrites=true`)
+mongoose.connect(`mongodb://admin:admin12@ds159880.mlab.com:59880/scapic`)
     .then(()=>console.log(`connection to database success`))
     .catch(((err)=>console.log(`connection failed to database ${err}`)));
 

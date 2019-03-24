@@ -5,7 +5,7 @@ const user= require('../../controllers/user/user');
 
 router
     .route('/login')
-    .get(user.LoginUser);
+    .post(user.LoginUser);
 
 router
     .route('/signup')

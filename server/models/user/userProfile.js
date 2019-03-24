@@ -65,25 +65,28 @@ const userProfile = new Schema({
 const UserProfiles = mongoose.model('userProfiles', userProfile);
 
 
-UserProfiles.getUser= (filter)=>{
-   const query=  UserProfiles.findOne(filter).lean();
-   query.exec((error,result)=>{
-       console.log(result);
-   });
+UserProfiles.getUser=async (filter)=>{
+   const query= await UserProfiles.findOne(filter).lean().exec();
+   try{
+       return query;
+   }catch (error) {
+       return error;
+   }
 
 };
 
 UserProfiles.getUsers= (filter)=>{
   const query =   UserProfiles.find(filter).lean();
   query.exec((error,result)=>{
-      if (error) console.log(error);
-     console.log(result);
+      if (error){
+          return error
+      }
+      return result;
   });
 };
 
 UserProfiles.addUser=async (params)=>{
  const user= new UserProfiles(params);
- console.log(user);
 const result= await user.save();
 try{
     return result;
