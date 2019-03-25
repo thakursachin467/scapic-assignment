@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema   = mongoose.Schema;
 const _ = require('lodash');
+const Sentry = require('@sentry/node');
 const userProfile = new Schema({
     email:{
         type: String
@@ -71,6 +72,7 @@ UserProfiles.getUser=async (filter)=>{
    try{
        return query;
    }catch (error) {
+       Sentry.captureException(error);
        return error;
    }
 
@@ -81,6 +83,7 @@ UserProfiles.getUsers=async ({filter={},limit,skip})=>{
   try{
       return query;
   }catch (error) {
+      Sentry.captureException(error);
       return error;
   }
 };
@@ -91,6 +94,7 @@ const result= await user.save();
 try{
     return result;
 }catch (error) {
+    Sentry.captureException(error);
     return error;
 }
 
@@ -105,6 +109,7 @@ UserProfiles.editUser = async  (filter,update,options={})=>{
           }
 
       }catch (error) {
+          Sentry.captureException(error);
           return error;
       }
 };

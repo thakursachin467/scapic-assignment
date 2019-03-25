@@ -2,15 +2,27 @@ import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { loginuser } from '../../actions/authActions';
-import TextField from '../Common/Input';
-
+import TextField from '../Common/Inputs/Input';
+import {Link} from 'react-router-dom';
 class Login extends Component {
     constructor() {
         super();
         this.state = {
             email: '',
             password: '',
-            errors: {}
+            errors: {},
+            formFields:[
+                {
+                    placeholder:'Email',
+                    name:'email',
+                    type:'email'
+                },
+                {
+                    placeholder:'Password',
+                    name:'password',
+                    type:'password'
+                },
+            ],
         };
         this.onChange = this.onChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
@@ -39,7 +51,7 @@ class Login extends Component {
         const authUser = {
             email: this.state.email,
             password: this.state.password
-        }
+        };
         this.props.loginuser(authUser);
 
     }
@@ -53,23 +65,21 @@ class Login extends Component {
                     <div className="row">
                         <div className="col-md-8 m-auto">
                             <form onSubmit={this.onSubmit} className="shadow p-3 mb-5 bg-white rounded">
-                                <TextField
-                                    placeholder="Email Address"
-                                    type="email" name="email"
-                                    value={this.state.email}
-                                    onChange={this.onChange}
-                                    error={errors.email} />
-                                <TextField
-                                    placeholder="Password"
-                                    type="password"
-                                    name="password"
-                                    value={this.state.password}
-                                    onChange={this.onChange}
-                                    error={errors.password} />
+                                {
+                                    this.state.formFields.map(field=>{
+                                      return   <TextField
+                                            placeholder={field.placeholder}
+                                            type={field.type}
+                                            name={field.name}
+                                            value={this.state[field.name]}
+                                            onChange={this.onChange}
+                                            error={errors[field.name]} />
+                                    })
+                                }
                                 <input type="submit" className="btn btn-info btn-block mt-4" />
                                 <p className=" mt-3" style={{"textAlign":"center"}}>
-                                    <a className="btn btn-block  btn-info">Signup Using google</a>
-                                    <a className="btn btn-block btn-info" >Signup Using facebook</a>
+                                    <a href='http://localhost:5000/api/auth/google' className="btn btn-block  btn-info">Login Using google</a>
+                                    <a href='http://localhost:5000/api/auth/facebook' className="btn btn-block btn-info" >Login Using facebook</a>
                                 </p>
                             </form>
                         </div>

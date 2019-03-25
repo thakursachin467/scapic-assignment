@@ -4,7 +4,7 @@ const bcrypt= require('bcryptjs');
 const jwt= require('jsonwebtoken');
 const LoginValidation= require('../../Utils/LoginValidation');
 const SignupValidation = require('../../Utils/SignupValidation');
-
+const Sentry= require('@sentry/node');
 exports.LoginUser= async (request,response,next)=>{
        const user= {
            email: _.get(request,'body.email'),
@@ -141,7 +141,8 @@ exports.AddUser=async (request,response,next)=>{
                 }
             })
    }catch (error) {
-     return  response
+       Sentry.captureException(error);
+       return  response
            .status(500)
            .send({
                success: false,
@@ -153,6 +154,7 @@ exports.AddUser=async (request,response,next)=>{
 
 
 exports.googleOauth=async (request,response,next)=>{
+    console.log('here',request.query);
     const profile= _.get(request,'user');
     const user_id=  _.get(request,'UserId');
     if(user_id){
@@ -171,10 +173,11 @@ exports.googleOauth=async (request,response,next)=>{
                 .send({
                 success: true,
                 message:{
-                   message:'Account Successfully Linked'
+                    message:'Account Successfully Linked'
                 }
             })
         }catch (error) {
+            Sentry.captureException(error);
             return response
                 .status(500)
                 .send({
@@ -225,6 +228,7 @@ exports.googleOauth=async (request,response,next)=>{
                       }
                   })
           }catch (error) {
+              Sentry.captureException(error);
               return response
                   .status(500)
                   .send({
@@ -281,6 +285,7 @@ exports.facebookOauth = async  (request,response,next)=>{
                     }
                 })
         }catch (error) {
+            Sentry.captureException(error);
             return response
                 .status(500)
                 .send({
@@ -330,6 +335,7 @@ exports.facebookOauth = async  (request,response,next)=>{
                         }
                     })
             }catch (error) {
+                Sentry.captureException(error);
                 return response
                     .status(500)
                     .send({

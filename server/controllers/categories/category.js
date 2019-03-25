@@ -1,12 +1,20 @@
 const Category = require('../../models/categories/category');
 const _ = require('lodash');
 const Model= require('../../models/model/model');
-
+const Sentry = require('@sentry/node');
 exports.getCategories=async (request,response,next)=>{
     const select= 'name';
     const limit= _.toNumber(_.get(request,'query.limit')|| 24);
     const skip = _.toNumber(_.get(request,'query.skip') || 0);
-   const categories= await Category.getAllCategory({limit,skip,select});
+    const sort= {
+        name:1
+    };
+    /*the following two specifies how many models should be shown in the preview of each category, if no parameter is
+    supplied from frontend  it will by default send 5 models oof each category
+    */
+   const preview = _.toNumber(_.get(request,'query.preview')||5);
+    const skipPreview= _.toNumber(_.get(request,'query.skipPreview')|| 0);
+   const categories= await Category.getAllCategory({limit,skip,select,sort});
    try{
        const category_id = categories.map(category=>{
            return _.get(category,'_id')
@@ -16,10 +24,8 @@ exports.getCategories=async (request,response,next)=>{
                $in:category_id
            }
        };
-       const limit= 5;
-       const skip=0;
        const populate= 'name';
-       const models= await Model.getModels({filter,limit,skip,populate});
+       const models= await Model.getModels({filter,populate});
        const modelItems= await categories.map(category=>{
            const model= models.filter(model=>{
                return _.isEqual( model.name._id,category._id)
@@ -33,18 +39,18 @@ exports.getCategories=async (request,response,next)=>{
               }
            });
            return {
+               _id: category._id,
                name: category.name,
                model:finalModel
            }
        });
-       const count= modelItems.length;
        return response
            .status(200)
            .send({
                pagination:{
-                   count,
-                   limit,
-                   skip
+                   count:categories.count,
+                  limit: _.toNumber(_.get(request,'query.limit')|| 24),
+                  skip: _.toNumber(_.get(request,'query.skipPreview')|| 0)
                },
                success: true,
                body:modelItems,
@@ -53,6 +59,7 @@ exports.getCategories=async (request,response,next)=>{
                }
            })
    }catch (error) {
+       Sentry.captureException(error);
        console.log(error);
        return response
            .status(500)
@@ -104,6 +111,7 @@ exports.getModels=async (request,response,next)=>{
                  }
              });
     }catch (error) {
+        Sentry.captureException(error);
         return response
             .status(500)
             .send({
@@ -142,6 +150,7 @@ exports.addModel= async  (request,response,next)=>{
                 }
             })
     }catch (error) {
+        Sentry.captureException(error);
         return response
             .send(500)
             .status({
@@ -188,7 +197,7 @@ exports.addCategory = async (request,response,next)=>{
                }
            })
     }catch (error) {
-        console.log(error);
+        Sentry.captureException(error);
         return response
             .status(500)
             .send({

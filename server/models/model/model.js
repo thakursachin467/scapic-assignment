@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema   = mongoose.Schema;
 const _ = require('lodash');
 const {ObjectId}= Schema;
-
+const Sentry = require('@sentry/node');
 const modelSchema= new Schema({
     name:{
         type: ObjectId,
@@ -29,9 +29,11 @@ const Model= mongoose.model('models',modelSchema);
 
 Model.getModels = async  ({filter,limit,skip,populate})=>{
   const modelItems= await  Model.find(filter).skip(skip).limit(limit).populate(populate).lean().exec();
+  modelItems.count= await Model.count(filter).lean().exec()
   try{
       return modelItems;
   }catch (error) {
+      Sentry.captureException(error);
       return error;
   }
 };
@@ -42,6 +44,7 @@ Model.addModel=async (params)=>{
     try{
         return result;
     }catch (error) {
+        Sentry.captureException(error);
         return error;
     }
 };

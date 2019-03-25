@@ -1,15 +1,15 @@
 import axios from "axios";
 import { GET_ERRORS, SET_CURRENT_USER } from "./types";
 import setAuthToken from "../Utils/setAuthToken";
-import jwt_decode from "jwt-decode";
 
 //Register user
 export const registerUser = (userData, history) => dispatch => {
-    console.log(userData)
     axios
         .post("/api/auth/signup", userData)
         .then(res => {
-            history.push("/login");
+            if(res.data.success){
+                history.push("/login");
+            }
         })
         .catch(err => {
             dispatch({
@@ -17,6 +17,17 @@ export const registerUser = (userData, history) => dispatch => {
                 payload: err.response.data.message
             });
         });
+};
+
+export const googleOauth = ()=>{
+        axios
+            .get("/api/auth/google")
+};
+
+export const facebookOauth = ()=>{
+    axios
+        .get("/api/auth/facebook")
+
 };
 
 //Login user
@@ -32,6 +43,7 @@ export const loginuser = (userData, history) => dispatch => {
              * * set auth token to header
              */
             setAuthToken(token);
+            dispatch(setCurrentUser(token))
         })
         .catch(err => {
             dispatch({
@@ -55,4 +67,16 @@ export const logoutUser = () => dispatch => {
 
     setAuthToken(false);
     //set current user to empy user
+};
+
+
+/**
+ * Set current user
+ */
+
+export  const setCurrentUser= (jwt) =>{
+  return {
+      type: SET_CURRENT_USER,
+      payload: jwt
+  }
 };

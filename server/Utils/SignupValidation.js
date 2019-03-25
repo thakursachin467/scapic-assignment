@@ -9,7 +9,7 @@ module.exports = function validateRegisterUser(data) {
     data.password = !isEmpty(data.password) ? data.password : '';
     data.rePassword = !isEmpty(data.rePassword) ? data.rePassword : '';
     if (!validator.isLength(data.name.firstName, { min: 3, max: 30 })) {
-        errors.name = 'Name must be between 3 and 30 characters';
+        errors.firstName = 'Name must be between 3 and 30 characters';
     }
     if (validator.isEmpty(data.name.firstName)) {
         errors.firstName = 'Name is required';

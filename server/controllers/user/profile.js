@@ -4,7 +4,7 @@ const bcrypt= require('bcryptjs');
 const jwt= require('jsonwebtoken');
 const LoginValidation= require('../../Utils/LoginValidation');
 const SignupValidation = require('../../Utils/SignupValidation');
-
+const Sentry = require('@sentry/node');
 
 exports.deactivateUser=async (request,response,next)=>{
     const user_id= request.userId;
@@ -38,6 +38,7 @@ exports.deactivateUser=async (request,response,next)=>{
             })
 
     }catch (error) {
+        Sentry.captureException(error);
         return response
             .status(500)
             .send({
@@ -97,6 +98,7 @@ exports.getUserProfile = async (request,response,next)=>{
             })
 
     }catch (error) {
+        Sentry.captureException(error);
         return response
             .status(500)
             .send({
@@ -146,6 +148,7 @@ exports.getUserProfiles=async (request,response,next)=>{
              }
          })
   }catch (error) {
+      Sentry.captureException(error);
       return response
           .status(500)
           .send({
